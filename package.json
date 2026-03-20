@@ -1,0 +1,59 @@
+{
+  "name": "@craftstudiodev/expo-tiktok-business",
+  "version": "1.0.0",
+  "description": "TikTok Business SDK for React Native — Turbo Module (New Architecture) + Expo support",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/",
+    "src/",
+    "ios/",
+    "android/",
+    "plugin/",
+    "app.plugin.js",
+    "expo-tiktok-business.podspec",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "build:plugin": "tsc -p plugin/tsconfig.json",
+    "prepare": "npm run build && npm run build:plugin",
+    "clean": "rm -rf lib plugin/build"
+  },
+  "keywords": [
+    "react-native",
+    "tiktok",
+    "tiktok-business",
+    "analytics",
+    "ads",
+    "turbo-module",
+    "new-architecture",
+    "expo",
+    "expo-plugin"
+  ],
+  "author": "Craft Studio",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/craftstudiodev/expo-tiktok-business.git"
+  },
+  "homepage": "https://github.com/craftstudiodev/expo-tiktok-business#readme",
+  "bugs": {
+    "url": "https://github.com/craftstudiodev/expo-tiktok-business/issues"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.73.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "codegenConfig": {
+    "name": "ExpoTikTokBusinessSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.craftstudiodev.tiktokbusiness"
+    }
+  }
+}
