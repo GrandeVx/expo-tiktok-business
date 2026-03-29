@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "build:plugin": "tsc -p plugin/tsconfig.json",
-    "prepare": "npm run build && npm run build:plugin",
+    "prepublishOnly": "npm run build && npm run build:plugin",
     "clean": "rm -rf lib plugin/build"
   },
   "keywords": [
@@ -44,6 +44,9 @@
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-native": ">=0.73.0"
+  },
+  "dependencies": {
+    "@expo/config-plugins": ">=7.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
