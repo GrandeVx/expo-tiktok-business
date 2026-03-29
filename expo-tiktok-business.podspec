@@ -17,7 +17,7 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
   s.dependency "React-Core"
-  s.dependency "TikTokBusinessSDK", "~> 1.3"
+  s.dependency "TikTokBusinessSDK", "~> 1.6"
 
   install_modules_dependencies(s)
 end

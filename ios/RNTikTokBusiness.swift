@@ -23,7 +23,6 @@ final class RNTikTokBusiness: NSObject {
   ) {
     DispatchQueue.main.async {
       let config = TikTokConfig(appId: appId, tiktokAppId: tiktokAppId)
-      config?.setAccessToken(accessToken)
 
       if debug {
         config?.enableDebugMode()
@@ -37,12 +36,11 @@ final class RNTikTokBusiness: NSObject {
         }
       }
 
-      TikTokBusiness.initializeSdk(config) { success, error in
-        if success {
-          resolve("TikTok SDK initialized successfully")
-        } else {
-          reject("INIT_ERROR", "Failed to initialize TikTok SDK: \(error?.localizedDescription ?? "Unknown error")", error)
-        }
+      if let config = config {
+        TikTokBusiness.initializeSdk(config)
+        resolve("TikTok SDK initialized successfully")
+      } else {
+        reject("INIT_ERROR", "Failed to create TikTok config", nil)
       }
     }
   }
@@ -99,16 +97,12 @@ final class RNTikTokBusiness: NSObject {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    guard let props = JSONHelper.parse(properties) else {
-      reject("PARSE_ERROR", "Failed to parse event properties", nil)
-      return
+    let event = TikTokBaseEvent(eventName: eventName)
+
+    if let props = JSONHelper.parse(properties) {
+      JSONHelper.addProperties(props, to: event)
     }
 
-    let event = TikTokBaseEvent(eventName: eventName)
-    if !eventId.isEmpty {
-      event.setEventId(eventId)
-    }
-    JSONHelper.addProperties(props, to: event)
     TikTokBusiness.trackEvent(event)
     resolve("Event tracked: \(eventName)")
   }
@@ -122,18 +116,12 @@ final class RNTikTokBusiness: NSObject {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    guard let props = JSONHelper.parse(properties) else {
-      reject("PARSE_ERROR", "Failed to parse content event properties", nil)
-      return
+    let event = TikTokBaseEvent(eventName: eventType)
+
+    if let props = JSONHelper.parse(properties) {
+      JSONHelper.addProperties(props, to: event)
     }
 
-    guard let event = ContentEventFactory.create(eventType: eventType) else {
-      reject("INVALID_EVENT", "Unknown content event type: \(eventType)", nil)
-      return
-    }
-
-    ContentEventFactory.applyProperties(props, to: event)
-    ContentEventFactory.applyContents(props, to: event)
     TikTokBusiness.trackEvent(event)
     resolve("Content event tracked: \(eventType)")
   }
@@ -147,13 +135,12 @@ final class RNTikTokBusiness: NSObject {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    guard let props = JSONHelper.parse(properties) else {
-      reject("PARSE_ERROR", "Failed to parse custom event properties", nil)
-      return
+    let event = TikTokBaseEvent(eventName: eventName)
+
+    if let props = JSONHelper.parse(properties) {
+      JSONHelper.addProperties(props, to: event)
     }
 
-    let event = TikTokBaseEvent(eventName: eventName)
-    JSONHelper.addProperties(props, to: event)
     TikTokBusiness.trackEvent(event)
     resolve("Custom event tracked: \(eventName)")
   }
@@ -167,16 +154,12 @@ final class RNTikTokBusiness: NSObject {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    guard let props = JSONHelper.parse(adRevenueJson) else {
-      reject("PARSE_ERROR", "Failed to parse ad revenue data", nil)
-      return
+    let event = TikTokBaseEvent(eventName: "ImpressionLevelAdRevenue")
+
+    if let props = JSONHelper.parse(adRevenueJson) {
+      JSONHelper.addProperties(props, to: event)
     }
 
-    let event = TikTokAdRevenueEvent()
-    if !eventId.isEmpty {
-      event.setEventId(eventId)
-    }
-    JSONHelper.addProperties(props, to: event)
     TikTokBusiness.trackEvent(event)
     resolve("Ad revenue event tracked")
   }
@@ -192,80 +175,7 @@ private enum JSONHelper {
 
   static func addProperties(_ properties: [String: Any], to event: TikTokBaseEvent) {
     for (key, value) in properties {
-      if key == "contents" || key == "content_type" || key == "content_id" ||
-         key == "description" || key == "currency" || key == "value" || key == "order_id" {
-        continue
-      }
       event.addProperty(withKey: key, value: value)
-    }
-  }
-}
-
-// MARK: - Content Event Factory
-
-private enum ContentEventFactory {
-  static func create(eventType: String) -> TikTokBaseEvent? {
-    switch eventType {
-    case "AddToCart":
-      return TikTokAddToCartEvent()
-    case "AddToWishlist":
-      return TikTokAddToWishlistEvent()
-    case "Checkout":
-      return TikTokCheckoutEvent()
-    case "Purchase":
-      return TikTokPurchaseEvent()
-    case "ViewContent":
-      return TikTokViewContentEvent()
-    default:
-      return nil
-    }
-  }
-
-  static func applyProperties(_ properties: [String: Any], to event: TikTokBaseEvent) {
-    if let contentType = properties["content_type"] as? String {
-      event.addProperty(withKey: "content_type", value: contentType)
-    }
-    if let contentId = properties["content_id"] as? String {
-      event.addProperty(withKey: "content_id", value: contentId)
-    }
-    if let description = properties["description"] as? String {
-      event.addProperty(withKey: "description", value: description)
-    }
-    if let currency = properties["currency"] as? String {
-      event.addProperty(withKey: "currency", value: currency)
-    }
-    if let value = properties["value"] as? NSNumber {
-      event.addProperty(withKey: "value", value: value)
-    }
-    if let orderId = properties["order_id"] as? String {
-      event.addProperty(withKey: "order_id", value: orderId)
-    }
-  }
-
-  static func applyContents(_ properties: [String: Any], to event: TikTokBaseEvent) {
-    guard let contentsArray = properties["contents"] as? [[String: Any]] else { return }
-
-    for item in contentsArray {
-      let contentParams = TikTokContentParams()
-      if let contentId = item["content_id"] as? String {
-        contentParams.contentId = contentId
-      }
-      if let contentName = item["content_name"] as? String {
-        contentParams.contentName = contentName
-      }
-      if let contentCategory = item["content_category"] as? String {
-        contentParams.contentCategory = contentCategory
-      }
-      if let brand = item["brand"] as? String {
-        contentParams.brand = brand
-      }
-      if let price = item["price"] as? NSNumber {
-        contentParams.price = price
-      }
-      if let quantity = item["quantity"] as? NSNumber {
-        contentParams.quantity = quantity
-      }
-      event.addContents(contentParams)
     }
   }
 }
