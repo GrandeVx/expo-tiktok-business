@@ -43,6 +43,23 @@ const withTikTokBusiness = (config, props) => {
         config.modResults.NSUserTrackingUsageDescription = trackingDescription;
         return config;
     });
+    // iOS: Add modular_headers for TikTokBusinessSDK in Podfile
+    config = (0, config_plugins_1.withDangerousMod)(config, [
+        'ios',
+        (config) => {
+            const podfilePath = path.join(config.modRequest.platformProjectRoot, 'Podfile');
+            if (fs.existsSync(podfilePath)) {
+                let podfileContent = fs.readFileSync(podfilePath, 'utf8');
+                const modularHeadersLine = "pod 'TikTokBusinessSDK', :modular_headers => true";
+                if (!podfileContent.includes(modularHeadersLine)) {
+                    // Insert after "use_react_native!" or at the end of the target block
+                    podfileContent = podfileContent.replace(/use_react_native!\([^)]*\)/, (match) => `${match}\n    ${modularHeadersLine}`);
+                    fs.writeFileSync(podfilePath, podfileContent);
+                }
+            }
+            return config;
+        },
+    ]);
     // Android: Add ProGuard rules
     if (addProguardRules) {
         config = (0, config_plugins_1.withDangerousMod)(config, [
