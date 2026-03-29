@@ -42,7 +42,7 @@ class ExpoTikTokBusiness: NSObject {
             }
         }
 
-        TikTokBusiness.trackEvent(event)
+        TikTokBusiness.trackTTEvent(event)
         resolve("Event tracked: \(eventName)")
     }
 

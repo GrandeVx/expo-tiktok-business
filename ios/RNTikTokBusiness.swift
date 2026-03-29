@@ -28,14 +28,6 @@ final class RNTikTokBusiness: NSObject {
         config?.enableDebugMode()
       }
 
-      // Support multiple TikTok App IDs (comma-separated)
-      let appIds = tiktokAppId.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
-      if appIds.count > 1 {
-        for id in appIds.dropFirst() {
-          config?.addTikTokAppId(id)
-        }
-      }
-
       if let config = config {
         TikTokBusiness.initializeSdk(config)
         resolve("TikTok SDK initialized successfully")
@@ -103,7 +95,7 @@ final class RNTikTokBusiness: NSObject {
       JSONHelper.addProperties(props, to: event)
     }
 
-    TikTokBusiness.trackEvent(event)
+    TikTokBusiness.trackTTEvent(event)
     resolve("Event tracked: \(eventName)")
   }
 
@@ -122,7 +114,7 @@ final class RNTikTokBusiness: NSObject {
       JSONHelper.addProperties(props, to: event)
     }
 
-    TikTokBusiness.trackEvent(event)
+    TikTokBusiness.trackTTEvent(event)
     resolve("Content event tracked: \(eventType)")
   }
 
@@ -141,7 +133,7 @@ final class RNTikTokBusiness: NSObject {
       JSONHelper.addProperties(props, to: event)
     }
 
-    TikTokBusiness.trackEvent(event)
+    TikTokBusiness.trackTTEvent(event)
     resolve("Custom event tracked: \(eventName)")
   }
 
@@ -160,7 +152,7 @@ final class RNTikTokBusiness: NSObject {
       JSONHelper.addProperties(props, to: event)
     }
 
-    TikTokBusiness.trackEvent(event)
+    TikTokBusiness.trackTTEvent(event)
     resolve("Ad revenue event tracked")
   }
 }
